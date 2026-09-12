@@ -3,7 +3,7 @@ import { ok, fail, getDb } from './_lib.js';
 // GET /api/meta -> 数据日期/构建时间/各分组数量
 export default async function handler(req, res) {
   try {
-    const db = getDb();
+    const db = await getDb();
     const meta = Object.fromEntries(
       db.prepare('SELECT key, value FROM meta').all().map((r) => [r.key, r.value])
     );

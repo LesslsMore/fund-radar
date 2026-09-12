@@ -1,4 +1,5 @@
 import path from 'node:path';
+import os from 'node:os';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
@@ -13,12 +14,35 @@ const CANDIDATES = [
   path.join(process.cwd(), 'db', 'funds.db'),
 ];
 
+// .vercelignore 上传时排除了 funds.db (太大导致本地上传不稳),
+// 生产环境冷启动时从 GitHub raw 下载最新库(每日 Actions 自动更新)并缓存到 /tmp
+const RAW_DB_URL = process.env.RAW_DB_URL ||
+  'https://raw.githubusercontent.com/LesslsMore/fund-radar/main/api/db/funds.db';
+const MAX_AGE_MS = 6 * 3600 * 1000; // /tmp 缓存超过 6 小时则重新下载
+
 let _db = null;
 
-export function getDb() {
+async function resolveDbPath() {
+  const local = CANDIDATES.find((c) => fs.existsSync(c));
+  if (local) return local;
+
+  const dest = path.join(os.tmpdir(), 'fund-radar-funds.db');
+  const stale = fs.existsSync(dest) &&
+    Date.now() - fs.statSync(dest).mtimeMs > MAX_AGE_MS;
+  if (!fs.existsSync(dest) || stale) {
+    const res = await fetch(RAW_DB_URL);
+    if (!res.ok) throw new Error(`db download failed: HTTP ${res.status}`);
+    const buf = Buffer.from(await res.arrayBuffer());
+    const tmp = dest + '.tmp';
+    fs.writeFileSync(tmp, buf);
+    fs.renameSync(tmp, dest);
+  }
+  return dest;
+}
+
+export async function getDb() {
   if (_db) return _db;
-  const p = CANDIDATES.find((c) => fs.existsSync(c));
-  if (!p) throw new Error(`funds.db not found, tried: ${CANDIDATES.join(', ')}`);
+  const p = await resolveDbPath();
   _db = new Database(p, { readonly: true, fileMustExist: true });
   _db.pragma('query_only = 1');
   return _db;
@@ -86,8 +110,8 @@ export function buildQuery(q = {}) {
   return { where, args, orderBy, scope };
 }
 
-export function runQuery(q = {}) {
-  const db = getDb();
+export async function runQuery(q = {}) {
+  const db = await getDb();
   const { where, args, orderBy } = buildQuery(q);
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
   const total = db.prepare(`SELECT COUNT(*) AS n FROM funds f LEFT JOIN returns r ON r.code=f.code LEFT JOIN risk k ON k.code=f.code ${whereSql}`).get(...args).n;

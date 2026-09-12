@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   try {
     const url = new URL(req.url, 'http://x');
     const q = Object.fromEntries(url.searchParams.entries());
-    const data = runQuery(q);
+    const data = await runQuery(q);
     ok(res, data, 300);
   } catch (e) {
     fail(res, 400, e.message || 'bad request');
