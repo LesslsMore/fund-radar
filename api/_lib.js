@@ -4,12 +4,13 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// 注意: 变量名不能叫 __dirname, Netlify 打包器会注入同名声明导致冲突
+const LIB_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 // 兼容 Vercel 打包路径与本地 node 直跑两种情况
 const CANDIDATES = [
-  path.join(__dirname, 'db', 'funds.db'),
-  path.join(__dirname, 'api', 'db', 'funds.db'),
+  path.join(LIB_DIR, 'db', 'funds.db'),
+  path.join(LIB_DIR, 'api', 'db', 'funds.db'),
   path.join(process.cwd(), 'api', 'db', 'funds.db'),
   path.join(process.cwd(), 'db', 'funds.db'),
 ];
