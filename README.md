@@ -53,18 +53,32 @@ fund-radar/
 
 ## 5 分钟部署（全部免费）
 
-1. **推到 GitHub**：`git init && git add -A && git commit -m "init" && git remote add origin ... && git push`
-   （public 仓库 Actions 无限免费；private 也够用，本工作流每天约 25 分钟）
-2. **Vercel 导入**：[vercel.com/new](https://vercel.com/new) 选择该仓库 → 直接 Deploy。
-   `vercel.json` 已配置好前后端构建，无需改任何设置。
-3. 完成。之后每天 Actions 自动爬取并提交新 `funds.db`，Vercel 检测到推送自动重新部署；
-   PWA 检测到新数据提示刷新。
+**已部署的线上地址**：https://fund-radar-iota.vercel.app （CLI 直接部署，项目名 fund-radar）
 
-**可选环境变量**（Vercel/Actions 设置里加）：
+### 数据库的分发方式（重要）
+
+`api/db/funds.db` 不随部署上传（`.vercelignore` 排除，CLI 上传大文件不稳定）。
+Serverless 函数**冷启动时从 `raw.githubusercontent.com/main/api/db/funds.db` 下载最新库**并缓存在实例 /tmp 中（6 小时过期重下）。因为 Actions 每天都会把新库提交到 main，所以：
+
+- **数据每日自动更新，且不需要重新部署**（运行时直接拉最新库）；
+- 只有改代码才需要重新部署（`vercel deploy --prod --yes`，或接 Git 集成后 push 自动部署）。
+
+### 从零部署步骤
+
+1. **推到 GitHub**：`git init && git add -A && git commit -m init && gh repo create fund-radar --public --source=. --push`
+   （public 仓库 Actions 无限免费；private 也够用，本工作流每天约 25 分钟）
+2. **Vercel**：`vercel login` 后执行 `vercel deploy --prod --yes`；或在 vercel.com/new 手动 Import 仓库。
+3. 完成。每日数据更新链路：Actions 爬取 → 提交新 funds.db → 函数冷启动自动拉到新库。
+
+**验证工具**：本地网络访问不到 `*.vercel.app` 时（国内常见），用仓库自带的云端验证——
+`gh workflow run verify-deployment` 然后 `gh run view --log` 查看结果（GitHub 服务器替你访问 API）。
+
+**可选环境变量**：
 
 | 变量 | 默认 | 说明 |
 |---|---|---|
 | `DB_SCOPE` | `all` | SQLite 存 `all`=全量 27526 只（约 8MB/天）或 `bond`=仅 7332 只债券型（约 2.5MB/天）。在意 GitHub 仓库体积增长时用 `bond` |
+| `RAW_DB_URL` | 见 `api/_lib.js` | 运行时下载数据库的地址，换仓库/分支时覆盖 |
 
 ## 本地开发
 
