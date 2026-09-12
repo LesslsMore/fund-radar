@@ -27,12 +27,14 @@
 
 ```
 fund-radar/
-├── api/                       # Vercel Serverless (Node 22 + better-sqlite3)
+├── api/                       # Vercel Serverless (Node 22 内置 node:sqlite, 零原生依赖)
 │   ├── db/funds.db            #   SQLite 数据库(提交进仓库, 每日由 Actions 重建)
 │   ├── _lib.js                #   开库/查询构造(全部参数白名单)
 │   ├── funds.js               #   GET /api/funds      列表(筛选/排序/分页)
 │   ├── funds/[code].js        #   GET /api/funds/:code 单只详情
 │   └── meta.js                #   GET /api/meta       数据日期/计数
+├── netlify/                   # Netlify Functions v2 (与 Vercel 版共用 _lib.js 查询层)
+│   └── functions/*.mjs        #   /api/funds, /api/meta, /api/funds/:code
 ├── frontend/                  # Vite + Vue3 + vite-plugin-pwa
 │   └── src/
 │       ├── App.vue            #   筛选页: 分组/状态/类型/搜索/排序 + 无限滚动
@@ -53,25 +55,31 @@ fund-radar/
 
 ## 5 分钟部署（全部免费）
 
-**已部署的线上地址**：https://fund-radar-iota.vercel.app （CLI 直接部署，项目名 fund-radar）
+**双平台已同时在跑**（同一仓库、同一数据管线，函数共用一套查询代码）：
+
+| 平台 | 地址 | 特点 |
+|---|---|---|
+| Vercel | https://fund-radar-iota.vercel.app | CLI 部署；本机网络实测访问超时 |
+| Netlify | https://fund-radar-lsm.netlify.app | 实测国内直连可用（netlify.app 可达性更好） |
 
 ### 数据库的分发方式（重要）
 
-`api/db/funds.db` 不随部署上传（`.vercelignore` 排除，CLI 上传大文件不稳定）。
+`api/db/funds.db` 不随部署上传（Vercel 走 `.vercelignore`；Netlify 的函数打包本来就不含它）。
 Serverless 函数**冷启动时从 `raw.githubusercontent.com/main/api/db/funds.db` 下载最新库**并缓存在实例 /tmp 中（6 小时过期重下）。因为 Actions 每天都会把新库提交到 main，所以：
 
 - **数据每日自动更新，且不需要重新部署**（运行时直接拉最新库）；
-- 只有改代码才需要重新部署（`vercel deploy --prod --yes`，或接 Git 集成后 push 自动部署）。
+- 只有改代码才需要重新部署（Vercel: `vercel deploy --prod --yes --name fund-radar`；Netlify: `netlify deploy --build --prod`）。
 
 ### 从零部署步骤
 
 1. **推到 GitHub**：`git init && git add -A && git commit -m init && gh repo create fund-radar --public --source=. --push`
    （public 仓库 Actions 无限免费；private 也够用，本工作流每天约 25 分钟）
-2. **Vercel**：`vercel login` 后执行 `vercel deploy --prod --yes`；或在 vercel.com/new 手动 Import 仓库。
-3. 完成。每日数据更新链路：Actions 爬取 → 提交新 funds.db → 函数冷启动自动拉到新库。
+2. **Vercel**：`vercel login` 后 `vercel deploy --prod --yes --name fund-radar`
+3. **Netlify**：`netlify login` 后 `netlify sites:create --name <全局唯一名> --account-slug <slug>`，再 `netlify deploy --build --prod`
+4. 完成。每日数据更新链路：Actions 爬取 → 提交新 funds.db → 两平台函数冷启动自动拉到新库。
 
-**验证工具**：本地网络访问不到 `*.vercel.app` 时（国内常见），用仓库自带的云端验证——
-`gh workflow run verify-deployment` 然后 `gh run view --log` 查看结果（GitHub 服务器替你访问 API）。
+**验证工具**：本地网络访问不到部署域名时（国内常见），用仓库自带的云端验证——
+`gh workflow run verify-deployment -f url=https://<你的部署域名>` 然后 `gh run view --log` 查看结果（GitHub 服务器替你访问 API）。
 
 **可选环境变量**：
 
@@ -83,7 +91,7 @@ Serverless 函数**冷启动时从 `raw.githubusercontent.com/main/api/db/funds.
 ## 本地开发
 
 ```bash
-npm install                        # api 依赖 (better-sqlite3)
+npm install                        # 目前无外部依赖 (SQLite 用 Node 22 内置 node:sqlite)
 cd frontend && npm install && npm run build && cd ..
 node local-server.mjs              # http://localhost:3000  (前端+API 同源)
 ```
