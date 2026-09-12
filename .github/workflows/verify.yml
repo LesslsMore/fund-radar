@@ -1,0 +1,28 @@
+name: verify-deployment
+
+# 手动触发: 用 GitHub 的服务器访问线上 API 并打印结果 (绕过本地网络限制做验证)
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "部署地址 (不含末尾斜杠)"
+        default: "https://fund-radar-iota.vercel.app"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check API endpoints
+        run: |
+          U="${{ inputs.url }}"
+          echo "== GET /api/meta =="
+          curl -s -m 60 -w "\n[http_code=%{http_code} time=%{time_total}s]\n" "$U/api/meta" | head -c 600; echo
+          echo "== GET /api/funds?group=limited&page_size=2 =="
+          curl -s -m 60 -w "\n[http_code=%{http_code} time=%{time_total}s]\n" "$U/api/funds?group=limited&page_size=2" | head -c 700; echo
+          echo "== GET /api/funds/006431 =="
+          curl -s -m 60 -w "\n[http_code=%{http_code} time=%{time_total}s]\n" "$U/api/funds/006431" | head -c 500; echo
+          echo "== GET / (前端首页) =="
+          curl -s -m 60 -o /dev/null -w "[http_code=%{http_code} time=%{time_total}s]\n" "$U/"
