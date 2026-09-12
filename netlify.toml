@@ -1,0 +1,16 @@
+# Netlify 部署配置 (与 Vercel 并存, 共用同一仓库/管线/SQLite)
+[build]
+  command = "cd frontend && npm install && npm run build"
+  publish = "frontend/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  node_bundler = "nft"   # 自动追踪 better-sqlite3 原生依赖
+
+# SPA 回退 (放在最后; /api/* 由 Functions v2 的 config.path 原生处理, 不走重定向)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
