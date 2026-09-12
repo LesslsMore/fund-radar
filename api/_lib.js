@@ -2,7 +2,8 @@ import path from 'node:path';
 import os from 'node:os';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import Database from 'better-sqlite3';
+// 用 Node 22 内置的 node:sqlite, 避免原生二进制依赖 (better-sqlite3 无法跨平台打包)
+import { DatabaseSync } from 'node:sqlite';
 
 // 注意: 变量名不能叫 __dirname, Netlify 打包器会注入同名声明导致冲突
 const LIB_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -44,8 +45,8 @@ async function resolveDbPath() {
 export async function getDb() {
   if (_db) return _db;
   const p = await resolveDbPath();
-  _db = new Database(p, { readonly: true, fileMustExist: true });
-  _db.pragma('query_only = 1');
+  _db = new DatabaseSync(p);
+  _db.exec('PRAGMA query_only = 1');
   return _db;
 }
 

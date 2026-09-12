@@ -6,8 +6,5 @@
   "description": "债基限额雷达 - 天天基金债券型基金申购限额/收益/夏普对比 (PWA + 定时爬取)",
   "engines": {
     "node": "22"
-  },
-  "dependencies": {
-    "better-sqlite3": "^11.10.0"
   }
 }
