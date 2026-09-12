@@ -1,0 +1,61 @@
+name: daily-fund-update
+
+# 每日定时爬取 -> 重建 SQLite -> 提交进仓库 -> 触发 Vercel 重新部署
+# 北京时间 01:30 (UTC 17:30), 避开净值披露高峰(约 20:00-24:00 CST)
+on:
+  schedule:
+    - cron: "30 17 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-fund-update
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FUND_RAW_DIR: ${{ github.workspace }}/pipeline/data/raw
+      FUND_INTER_DIR: ${{ github.workspace }}/pipeline/data/intermediate
+      FUND_OUT_DIR: ${{ github.workspace }}/pipeline/data/output
+      FUND_INTERMEDIATE_DIR: ${{ github.workspace }}/pipeline/data/intermediate
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install requests
+
+      - name: Scrape subscription status (551 pages)
+        run: python pipeline/scrape_all.py
+
+      - name: Parse and filter
+        run: python pipeline/parse_and_filter.py
+
+      - name: Fetch period returns
+        run: python pipeline/fetch_returns.py
+
+      - name: Fetch sharpe/std
+        run: python pipeline/fetch_sharpe.py
+
+      - name: Build SQLite
+        run: python pipeline/build_db.py
+
+      - name: Commit database (skip if unchanged)
+        run: |
+          git config user.name "fund-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add api/db/funds.db
+          if git diff --cached --quiet; then
+            echo "数据无变化, 跳过提交"
+          else
+            git commit -m "chore(data): daily update $(date -u +%F)"
+            git push
+          fi

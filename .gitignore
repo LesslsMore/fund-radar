@@ -1,0 +1,13 @@
+node_modules/
+frontend/dist/
+pipeline/.cache/
+pipeline/data/
+raw/
+intermediate/
+output/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+.vercel
+.npmrc-clean
