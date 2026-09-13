@@ -9,7 +9,7 @@ const props = defineProps({ module: { type: String, required: true } }); // bond
 
 const m = computed(() => store.modules[props.module]);
 const isBond = computed(() => props.module === "bond");
-const title = computed(() => (isBond.value ? "📊 债基雷达" : "🌍 QDII 基金"));
+const title = computed(() => (isBond.value ? "📊 债券基金" : "🌍 QDII 基金"));
 
 const types = computed(() => {
   const s = new Set();

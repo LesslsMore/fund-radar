@@ -13,10 +13,10 @@ const tab = ref("bond");
 
   <nav class="tabbar">
     <button class="tbtn" :class="{ on: tab === 'bond' }" @click="tab = 'bond'">
-      <span class="ticon">📊</span><span class="tlabel">债基</span>
+      <span class="ticon">📊</span><span class="tlabel">债券基金</span>
     </button>
     <button class="tbtn" :class="{ on: tab === 'qdii' }" @click="tab = 'qdii'">
-      <span class="ticon">🌍</span><span class="tlabel">QDII</span>
+      <span class="ticon">🌍</span><span class="tlabel">QDII 基金</span>
     </button>
     <button class="tbtn" :class="{ on: tab === 'watch' }" @click="tab = 'watch'">
       <span class="ticon">⭐</span><span class="tlabel">自选</span>

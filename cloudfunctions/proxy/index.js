@@ -1,7 +1,7 @@
 // 云函数: proxy —— 转发请求基金雷达后端 API (腾讯云服务器出网, 无域名白名单限制)
 // 小程序端传 { path: "/api/funds", params: { group: "limited", page_size: 1000 } }
 // 返回后端的统一信封 { code, data, message }
-const BASE = "https://fund-radar-lsm.netlify.app";
+const BASE = "https://fund-radar-cf.pages.dev";
 
 exports.main = async (event) => {
   const path = String(event.path || "/api/meta");

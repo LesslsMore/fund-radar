@@ -78,8 +78,9 @@ function direct(path, params) {
   });
 }
 
+// 主力: Cloudflare Pages; 次选: Netlify; 备用: Vercel
 function apiBase() {
-  return "https://fund-radar-lsm.netlify.app";
+  return "https://fund-radar-cf.pages.dev";
 }
 
 module.exports = {

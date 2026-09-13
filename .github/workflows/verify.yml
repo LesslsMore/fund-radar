@@ -26,3 +26,4 @@ jobs:
           curl -s -m 60 -w "\n[http_code=%{http_code} time=%{time_total}s]\n" "$U/api/funds/006431" | head -c 500; echo
           echo "== GET / (前端首页) =="
           curl -s -m 60 -o /dev/null -w "[http_code=%{http_code} time=%{time_total}s]\n" "$U/"
+          echo "index-asset: $(curl -s -m 60 "$U/" | grep -oE 'index-[A-Za-z0-9_-]+\.js' | head -1)"

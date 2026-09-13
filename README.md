@@ -57,11 +57,11 @@ fund-radar/
 
 **三平台已同时在跑**（同一仓库、同一数据管线，函数共用一套查询代码）：
 
-| 平台 | 地址 | 数据库 | 国内可达性（实测） |
-|---|---|---|---|
-| **Cloudflare Pages** | https://fund-radar-cf.pages.dev | **D1**（云上 SQLite） | ✅ 可直连（~0.7s） |
-| **Netlify** | https://fund-radar-lsm.netlify.app | 运行时拉取 SQLite 文件 | ✅ 可直连 |
-| Vercel | https://fund-radar-iota.vercel.app | 运行时拉取 SQLite 文件 | ❌ 本机超时 |
+| 平台 | 地址 | 定位 | 数据库 | 国内可达性（实测） |
+|---|---|---|---|---|
+| **Cloudflare Pages** ⭐主力 | https://fund-radar-cf.pages.dev | 日常入口 | **D1**（云上 SQLite） | ✅ 可直连（~0.7s） |
+| **Netlify** 次选 | https://fund-radar-lsm.netlify.app | CF 故障时备用 | 运行时拉取 SQLite 文件 | ✅ 可直连 |
+| Vercel 备用 | https://fund-radar-iota.vercel.app | 灾备 | 运行时拉取 SQLite 文件 | ❌ 本机超时 |
 
 ### 数据库的分发方式（重要）
 
