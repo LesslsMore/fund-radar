@@ -1,5 +1,6 @@
 const api = require("../../utils/api.js");
 const L = require("../../utils/fund-logic.js");
+const config = require("../../config.js");
 
 const PAGE_SIZE = 50;
 
@@ -37,6 +38,7 @@ Page({
     expanded: {},
 
     lastUpdated: "",
+    channel: config.CLOUD_ENV_ID ? "云通道" : "直连",
   },
 
   allFunds: [],

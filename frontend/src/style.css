@@ -23,7 +23,7 @@ body {
   line-height: 1.45;
 }
 
-#app { max-width: 720px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; }
+#app { max-width: 720px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; padding-bottom: calc(56px + env(safe-area-inset-bottom)); }
 
 .update-bar {
   position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px;
@@ -185,3 +185,80 @@ body {
 .err { padding: 40px 20px; text-align: center; color: var(--text-2); }
 .err button { margin-top: 12px; padding: 8px 22px; border: none; border-radius: 8px; background: var(--blue); color: #fff; font-size: 14px; }
 .empty { padding: 50px 0; text-align: center; color: var(--text-2); }
+
+
+/* ---------- 底部导航 ---------- */
+.tabbar {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 720px; z-index: 50;
+  display: flex; background: #ffffff; border-top: 1rpx solid var(--line);
+  box-shadow: 0 -4rpx 16rpx rgba(15, 23, 42, 0.06);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tbtn {
+  flex: 1 1 0; border: none; background: transparent; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 2rpx;
+  padding: 10rpx 0 12rpx; color: var(--text-2); font-size: 22rpx;
+}
+.tbtn .ticon { font-size: 40rpx; line-height: 1.2; }
+.tbtn.on { color: var(--blue); font-weight: 700; }
+
+/* ---------- 收藏星标 ---------- */
+.star {
+  flex: 0 0 auto; cursor: pointer; font-size: 32rpx; line-height: 1;
+  color: #c8cfd9; background: none; border: none; padding: 0 4rpx;
+}
+.star.on { color: var(--accent); }
+
+/* ---------- 自选页 ---------- */
+.addrow { display: flex; gap: 12rpx; margin-top: 4rpx; }
+.addin { flex: 1 1 auto; }
+.addbtn {
+  flex: 0 0 auto; border: none; background: var(--blue); color: #fff;
+  border-radius: 16rpx; padding: 0 28rpx; font-size: 25rpx; font-weight: 600;
+}
+.addresults {
+  margin-top: 12rpx; background: #fff; border: 1rpx solid var(--line);
+  border-radius: 16rpx; overflow: hidden;
+}
+.addrow-item {
+  display: flex; align-items: center; gap: 12rpx;
+  padding: 16rpx 20rpx; border-bottom: 1rpx solid var(--line); font-size: 26rpx;
+}
+.addrow-item:last-child { border-bottom: none; }
+.ar-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ar-code { color: var(--text-2); font-size: 22rpx; margin-left: 8rpx; }
+.ar-add {
+  flex: 0 0 auto; border: none; background: #eef3fb; color: var(--blue);
+  border-radius: 12rpx; padding: 10rpx 20rpx; font-size: 23rpx; font-weight: 600;
+}
+.ar-add:disabled { color: #9aa5b4; background: #f2f4f8; }
+
+/* ---------- 分页 ---------- */
+.pager {
+  display: flex; align-items: center; justify-content: center; gap: 12rpx;
+  padding: 20rpx 0 8rpx; flex-wrap: wrap; font-size: 24rpx; color: var(--text-2);
+}
+.pgbtn {
+  border: 1rpx solid var(--line); background: #fff; color: var(--blue);
+  border-radius: 14rpx; padding: 10rpx 22rpx; font-size: 23rpx; font-weight: 600;
+}
+.pgbtn:disabled { color: #b6bfcc; background: #f2f4f8; }
+.pgtext { font-weight: 700; color: var(--text); }
+.pgjump { display: inline-flex; align-items: center; gap: 8rpx; }
+.pgin {
+  width: 110rpx; border: 1rpx solid var(--line); border-radius: 12rpx;
+  padding: 9rpx 8rpx; font-size: 23rpx; text-align: center; outline: none;
+}
+.pgsize {
+  text-align: center; color: var(--text-2); font-size: 22rpx; padding: 4rpx 0 16rpx;
+}
+.pgsize select {
+  border: 1rpx solid var(--line); border-radius: 10rpx; background: #fff;
+  padding: 4rpx 8rpx; font-size: 22rpx; color: var(--text);
+}
+
+.retrybtn {
+  margin-top: 24rpx; border: none; background: var(--blue); color: #fff;
+  border-radius: 14rpx; padding: 14rpx 48rpx; font-size: 27rpx;
+}

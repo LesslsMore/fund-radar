@@ -10,13 +10,15 @@ export { buildQuery };
 
 // 注意: 变量名不能叫 __dirname, Netlify 打包器会注入同名声明导致冲突
 const LIB_DIR = path.dirname(fileURLToPath(import.meta.url));
+// 数据库路径用运行时拼接 (nft 打包追踪会静态解析字面量路径, 导致被排除的 db 进部署清单)
+const DB_REL = ["db", "funds.db"].join(path.sep);
 
 // 兼容 Vercel 打包路径与本地 node 直跑两种情况
 const CANDIDATES = [
-  path.join(LIB_DIR, 'db', 'funds.db'),
-  path.join(LIB_DIR, 'api', 'db', 'funds.db'),
-  path.join(process.cwd(), 'api', 'db', 'funds.db'),
-  path.join(process.cwd(), 'db', 'funds.db'),
+  path.join(LIB_DIR, DB_REL),
+  path.join(LIB_DIR, "api", DB_REL),
+  path.join(process.cwd(), "api", DB_REL),
+  path.join(process.cwd(), DB_REL),
 ];
 
 // .vercelignore 上传时排除了 funds.db (太大导致本地上传不稳),

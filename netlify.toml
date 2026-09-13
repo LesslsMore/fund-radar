@@ -1,5 +1,6 @@
 # Netlify 部署配置 (与 Vercel 并存, 共用同一仓库/管线/SQLite)
 [build]
+  base = "."
   command = "cd frontend && npm install && npm run build"
   publish = "frontend/dist"
 

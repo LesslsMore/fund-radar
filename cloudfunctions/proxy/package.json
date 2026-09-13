@@ -1,0 +1,7 @@
+{
+  "name": "proxy",
+  "version": "1.0.0",
+  "description": "基金雷达 API 代理",
+  "main": "index.js",
+  "dependencies": {}
+}
