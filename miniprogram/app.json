@@ -1,0 +1,13 @@
+{
+  "pages": ["pages/index/index"],
+  "window": {
+    "navigationBarTitleText": "基金雷达",
+    "navigationBarBackgroundColor": "#0f4c9c",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f4f6fa",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json"
+}

@@ -180,7 +180,7 @@ const metaLine = computed(() => {
 <template>
   <div class="header">
     <div class="row1">
-      <h1>📊 债基限额雷达</h1>
+      <h1>📊 基金雷达</h1>
       <span class="date">{{ metaLine }}</span>
     </div>
     <div class="counts" v-if="meta">

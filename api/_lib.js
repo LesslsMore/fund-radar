@@ -68,17 +68,7 @@ export function fail(res, status, message) {
   res.end(JSON.stringify({ code: status, data: null, message }));
 }
 
-export const ITEM_SQL = `
-SELECT
-  f.code, f.name, f.type, f.sgzt, f.shzt, f.next_open_day,
-  f.min_buy, f.daily_limit, f.limit_group, f.limit_display,
-  f.fee_rate, f.nav, f.nav_date, f.is_bond,
-  r.w, r.m1, r.m3, r.m6, r.y1, r.y2, r.y3, r.ytd, r.since, r.source AS ret_source,
-  k.sharpe_1y, k.sharpe_2y, k.sharpe_3y, k.std_1y, k.std_2y, k.std_3y, k.as_of
-FROM funds f
-LEFT JOIN returns r ON r.code = f.code
-LEFT JOIN risk k ON k.code = f.code
-`;
+// ITEM_SQL / buildQuery 均来自 _query.js (三端共用), 在文件头部 import
 
 // 查询参数 -> WHERE/ORDER BY: 见 _query.js (三端共用)
 

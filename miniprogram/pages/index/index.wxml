@@ -1,0 +1,147 @@
+<view class="header">
+  <view class="row1">
+    <text class="h1">📊 基金雷达</text>
+    <text class="date">{{lastUpdated}}</text>
+  </view>
+  <view class="counts" wx:if="{{meta}}">
+    <text class="ci"><b>{{counts.limited}}</b> 有限额</text>
+    <text class="ci"><b>{{counts.unlimited}}</b> 无限额</text>
+    <text class="ci"><b>{{counts.nodata}}</b> 无数据</text>
+    <text class="ci"><b>{{counts.all}}</b> 债券型</text>
+  </view>
+</view>
+
+<view class="filters">
+  <input class="search" value="{{keyword}}" bindinput="onSearch" placeholder="搜索基金代码 / 名称…" confirm-type="search" />
+
+  <scroll-view class="tabs" scroll-x enhanced show-scrollbar="{{false}}">
+    <view class="tabrow">
+      <view wx:for="{{groups}}" wx:key="key"
+            class="tab {{group === item.key ? 'on' : ''}}"
+            data-key="{{item.key}}" bindtap="onTab">
+        {{item.label}}<text class="n" wx:if="{{counts.all}}"> {{counts[item.key]}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="selects">
+    <picker class="sel" mode="selector" range="{{statOptions}}" bindchange="onStatus">
+      <view class="sel-in">申购状态：{{statusIndex > 0 ? statOptions[statusIndex] : "全部"}}</view>
+    </picker>
+    <view class="sel typebtn {{typeSel.length ? 'on' : ''}}" bindtap="toggleTypePanel">
+      类型{{typeSel.length ? "(" + typeSel.length + ")" : ": 全部"}}
+    </view>
+    <view class="sel typebtn {{conditions.length ? 'on' : ''}}" bindtap="toggleCondPanel">
+      条件{{conditions.length ? "(" + conditions.length + ")" : ""}}
+    </view>
+  </view>
+
+  <view class="sortrow">
+    <text class="slabel">第一</text>
+    <picker class="selpick" mode="selector" range="{{sortLabels}}" value="{{primaryIdx}}" bindchange="onPrimary">
+      <view class="sel-in">{{sortLabels[primaryIdx]}}</view>
+    </picker>
+    <view class="dirbtn" bindtap="togglePrimaryDir">{{primaryAsc ? "↑" : "↓"}}</view>
+  </view>
+  <view class="sortrow">
+    <text class="slabel">第二</text>
+    <picker class="selpick" mode="selector" range="{{sortLabels}}" value="{{secondaryIdx}}" bindchange="onSecondary">
+      <view class="sel-in">{{sortLabels[secondaryIdx]}}</view>
+    </picker>
+    <view class="dirbtn" bindtap="toggleSecondaryDir">{{secondaryAsc ? "↑" : "↓"}}</view>
+  </view>
+
+  <view class="mask" wx:if="{{typePanelOpen || condPanelOpen}}" bindtap="closePanels"></view>
+
+  <view class="panel" wx:if="{{typePanelOpen}}">
+    <view class="phead"><text class="ptitle">基金类型（可多选，如 中短债 + 长债）</text>
+      <view class="pdone" bindtap="closePanels">完成</view></view>
+    <checkbox-group bindchange="onTypeChange">
+      <label class="pitem" wx:for="{{typeItems}}" wx:key="name">
+        <checkbox value="{{item.name}}" checked="{{item.checked}}" color="#0f4c9c" />
+        <text>{{item.name}}</text>
+      </label>
+    </checkbox-group>
+    <view class="pclear" wx:if="{{typeSel.length}}" bindtap="clearTypes">清空已选 ({{typeSel.length}})</view>
+  </view>
+
+  <view class="panel" wx:if="{{condPanelOpen}}">
+    <view class="phead"><text class="ptitle">条件筛选（例：近1年收益 > 3%）</text>
+      <view class="pdone" bindtap="closePanels">完成</view></view>
+    <radio-group class="cmode" bindchange="onCondMode">
+      <text class="cmlabel">条件间关系：</text>
+      <label class="cml"><radio value="any" checked="{{condMode === 'any'}}" color="#0f4c9c" />满足任一(或)</label>
+      <label class="cml"><radio value="all" checked="{{condMode === 'all'}}" color="#0f4c9c" />全部满足(与)</label>
+    </radio-group>
+    <view class="condrow" wx:for="{{conditions}}" wx:key="index" wx:for-index="idx" wx:for-item="c">
+      <picker class="cpick metric" mode="selector" range="{{metricLabels}}"
+              data-idx="{{idx}}" bindchange="onCondMetric">
+        <view class="cval">{{c.metricLabel}}</view>
+      </picker>
+      <picker class="cpick op" mode="selector" range="{{ops}}"
+              data-idx="{{idx}}" bindchange="onCondOp">
+        <view class="cval">{{c.op}}</view>
+      </picker>
+      <input class="cinput" type="digit" value="{{c.value}}" data-idx="{{idx}}"
+             bindinput="onCondValue" placeholder="数值" />
+      <text class="cunit">%</text>
+      <view class="cdel" data-idx="{{idx}}" bindtap="delCond">×</view>
+    </view>
+    <view class="cempty" wx:if="{{!conditions.length}}">还没有条件，点下面添加一条</view>
+    <view class="paddcond" bindtap="addCond">+ 添加条件</view>
+    <view class="chint">缺数据视为不满足该条件。多个条件可用上方关系组合，如 [近1年收益 > 3%] 或 [近2年收益 > 2.5%]。</view>
+  </view>
+</view>
+
+<view class="list" wx:if="{{!loading && !errorMsg}}">
+  <view class="card" wx:for="{{list}}" wx:key="code" data-code="{{item.code}}" bindtap="toggleCard">
+    <view class="l1">
+      <text class="name">{{item.name}}</text>
+      <text class="badge {{item.sgztCls}}">{{item.sgzt || "未知"}}</text>
+      <text class="code">{{item.code}}</text>
+    </view>
+    <view class="l2">
+      <view class="kv"><view class="k">日累计限额</view>
+        <view class="v {{item.limit_group === 'limited' ? 'limit' : 'unlim'}}">{{item.limit_display}}</view></view>
+      <view class="kv"><view class="k">近1年收益</view><view class="v {{item.y1Cls}}">{{item.y1Text}}</view></view>
+      <view class="kv"><view class="k">近2年收益</view><view class="v {{item.y2Cls}}">{{item.y2Text}}</view></view>
+      <view class="kv"><view class="k">近3年收益</view><view class="v {{item.y3Cls}}">{{item.y3Text}}</view></view>
+    </view>
+    <view class="l2">
+      <view class="kv"><view class="k">夏普 近1年</view><view class="v">{{item.s1Text}}</view></view>
+      <view class="kv"><view class="k">夏普 近2年</view><view class="v">{{item.s2Text}}</view></view>
+      <view class="kv"><view class="k">夏普 近3年</view><view class="v">{{item.s3Text}}</view></view>
+      <view class="kv"><view class="k">标准差 近1年</view><view class="v">{{item.std1}}</view></view>
+    </view>
+    <view class="l3">
+      <text>{{item.type}}</text>
+      <text>净值 {{item.navText}} ({{item.nav_date}})</text>
+      <text>费率 {{item.feeText}}</text>
+    </view>
+
+    <view class="detail" wx:if="{{expanded[item.code]}}" catchtap="noop">
+      <view class="dgrid">
+        <view class="cell" wx:for="{{item.detailCells}}" wx:for-item="cell" wx:key="k">
+          <view class="k">{{cell.k}}</view><view class="dv {{cell.cls}}">{{cell.text}}</view>
+        </view>
+        <view class="cell"><view class="k">夏普 近2/3年</view><view class="dv">{{item.s2Text}} / {{item.s3Text}}</view></view>
+        <view class="cell"><view class="k">购买起点</view><view class="dv">{{item.minBuyText}}</view></view>
+        <view class="cell"><view class="k">赎回状态</view><view class="dv">{{item.shzt || "--"}}</view></view>
+        <view class="cell"><view class="k">下一开放日</view><view class="dv">{{item.next_open_day || "--"}}</view></view>
+      </view>
+      <view class="actions">
+        <view class="act" data-code="{{item.code}}" catchtap="copyCode">复制代码</view>
+        <view class="act muted2">数据源：天天基金</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty" wx:if="{{!filteredCount}}">没有符合条件的基金 🤷</view>
+  <view class="foot">显示 {{list.length}} / {{filteredCount}} 只 · 点击卡片展开详情</view>
+</view>
+
+<view class="skeleton" wx:if="{{loading}}">加载中…（需在开发者工具勾选“不校验合法域名”）</view>
+<view class="err" wx:if="{{errorMsg}}">
+  加载失败：{{errorMsg}}
+  <view class="retry" bindtap="load">重试</view>
+</view>

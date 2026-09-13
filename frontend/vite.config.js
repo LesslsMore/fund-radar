@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: '债基限额雷达',
-        short_name: '债基雷达',
-        description: '债券型基金申购限额 · 近一年收益 · 夏普比率对比（数据源：天天基金）',
+        name: '基金雷达',
+        short_name: '基金雷达',
+        description: '基金申购限额 · 阶段收益 · 夏普比率对比（数据源：天天基金）',
         lang: 'zh-CN',
         theme_color: '#0f4c9c',
         background_color: '#f4f6fa',

@@ -1,0 +1,15 @@
+{
+  "compileType": "miniprogram",
+  "appid": "touristappid",
+  "projectname": "fund-radar-miniprogram",
+  "libVersion": "3.0.0",
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "urlCheck": false,
+    "ignoreUploadUnusedFiles": true
+  },
+  "condition": {}
+}
