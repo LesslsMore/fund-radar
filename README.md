@@ -55,28 +55,40 @@ fund-radar/
 
 ## 5 分钟部署（全部免费）
 
-**双平台已同时在跑**（同一仓库、同一数据管线，函数共用一套查询代码）：
+**三平台已同时在跑**（同一仓库、同一数据管线，函数共用一套查询代码）：
 
-| 平台 | 地址 | 特点 |
-|---|---|---|
-| Vercel | https://fund-radar-iota.vercel.app | CLI 部署；本机网络实测访问超时 |
-| Netlify | https://fund-radar-lsm.netlify.app | 实测国内直连可用（netlify.app 可达性更好） |
+| 平台 | 地址 | 数据库 | 国内可达性（实测） |
+|---|---|---|---|
+| **Cloudflare Pages** | https://fund-radar-cf.pages.dev | **D1**（云上 SQLite） | ✅ 可直连（~0.7s） |
+| **Netlify** | https://fund-radar-lsm.netlify.app | 运行时拉取 SQLite 文件 | ✅ 可直连 |
+| Vercel | https://fund-radar-iota.vercel.app | 运行时拉取 SQLite 文件 | ❌ 本机超时 |
 
 ### 数据库的分发方式（重要）
 
-`api/db/funds.db` 不随部署上传（Vercel 走 `.vercelignore`；Netlify 的函数打包本来就不含它）。
-Serverless 函数**冷启动时从 `raw.githubusercontent.com/main/api/db/funds.db` 下载最新库**并缓存在实例 /tmp 中（6 小时过期重下）。因为 Actions 每天都会把新库提交到 main，所以：
+- **Cloudflare**：数据存 **D1**（Cloudflare 官方 Serverless SQLite，免费 5GB）。每日 Actions 爬取后自动同步进 D1
+  （需在仓库 Secrets 配置 `CLOUDFLARE_API_TOKEN`，见下方步骤 5；未配置时自动跳过，不影响其他平台）。
+  函数直接查询 D1，无需运行时下载文件。
+- **Vercel / Netlify**：`api/db/funds.db` 不随部署上传（Vercel 走 `.vercelignore`；Netlify 打包本来就不含它）。
+  函数**冷启动时从 `raw.githubusercontent.com/main/api/db/funds.db` 下载最新库**并缓存到实例 /tmp（6 小时过期重下）。
 
-- **数据每日自动更新，且不需要重新部署**（运行时直接拉最新库）；
-- 只有改代码才需要重新部署（Vercel: `vercel deploy --prod --yes --name fund-radar`；Netlify: `netlify deploy --build --prod`）。
+因为 Actions 每天都会提交新库，所以**数据每日自动更新，不需要重新部署**；只有改代码才需要重新部署
+（Vercel: `vercel deploy --prod --yes --name fund-radar`；Netlify: `netlify deploy --build --prod`；Cloudflare: `wrangler pages deploy frontend/dist --branch main`）。
 
 ### 从零部署步骤
 
 1. **推到 GitHub**：`git init && git add -A && git commit -m init && gh repo create fund-radar --public --source=. --push`
    （public 仓库 Actions 无限免费；private 也够用，本工作流每天约 25 分钟）
-2. **Vercel**：`vercel login` 后 `vercel deploy --prod --yes --name fund-radar`
-3. **Netlify**：`netlify login` 后 `netlify sites:create --name <全局唯一名> --account-slug <slug>`，再 `netlify deploy --build --prod`
-4. 完成。每日数据更新链路：Actions 爬取 → 提交新 funds.db → 两平台函数冷启动自动拉到新库。
+2. **Cloudflare**：`wrangler login` → `wrangler d1 create fund-radar`（把输出的 database_id 填进 wrangler.toml）
+   → `wrangler pages project create fund-radar-cf --production-branch main`
+   → `python pipeline/export_d1_sql.py`，然后
+   `for f in pipeline/data/d1_dump_*.sql; do wrangler d1 execute fund-radar --remote --file="$f"; done`
+   → `wrangler pages deploy frontend/dist --branch main`
+3. **Vercel**：`vercel login` 后 `vercel deploy --prod --yes --name fund-radar`
+4. **Netlify**：`netlify login` 后 `netlify sites:create --name <全局唯一名> --account-slug <slug>`，再 `netlify deploy --build --prod`
+5. **打通 Cloudflare 每日同步**（可选，仅 CF 平台需要）：到 Cloudflare 控制台创建 API Token（权限 Account→D1→Edit），然后：
+   `gh secret set CLOUDFLARE_API_TOKEN --body "<Token>"`
+   （`CLOUDFLARE_ACCOUNT_ID` 和 `CLOUDFLARE_D1_DATABASE_ID` 本仓库已预置；未配 Token 时 Actions 自动跳过 D1 同步。）
+6. 完成。每日数据更新链路：Actions 爬取 → 提交新 funds.db + 同步 D1 → 三平台全部自动生效。
 
 **验证工具**：本地网络访问不到部署域名时（国内常见），用仓库自带的云端验证——
 `gh workflow run verify-deployment -f url=https://<你的部署域名>` 然后 `gh run view --log` 查看结果（GitHub 服务器替你访问 API）。

@@ -23,6 +23,8 @@ jobs:
       FUND_INTER_DIR: ${{ github.workspace }}/pipeline/data/intermediate
       FUND_OUT_DIR: ${{ github.workspace }}/pipeline/data/output
       FUND_INTERMEDIATE_DIR: ${{ github.workspace }}/pipeline/data/intermediate
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -47,6 +49,18 @@ jobs:
 
       - name: Build SQLite
         run: python pipeline/build_db.py
+
+      # 可选: 仓库配置了 Cloudflare secrets 时, 同步数据到 D1 (供 Cloudflare Pages 部署使用)
+      - name: Sync to Cloudflare D1
+        if: env.CLOUDFLARE_ACCOUNT_ID != '' && env.CLOUDFLARE_D1_DATABASE_ID != '' && env.CLOUDFLARE_API_TOKEN != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          python pipeline/export_d1_sql.py
+          for f in pipeline/data/d1_dump_*.sql; do
+            echo "executing $f"
+            npx --yes wrangler@latest d1 execute fund-radar --remote --file="$f" -y
+          done
 
       - name: Commit database (skip if unchanged)
         run: |

@@ -1,0 +1,9 @@
+name = "fund-radar-cf"
+compatibility_date = "2026-09-01"
+pages_build_output_dir = "frontend/dist"
+
+# D1 绑定: database_id 在 `wrangler d1 create fund-radar` 后回填
+[[d1_databases]]
+binding = "DB"
+database_name = "fund-radar"
+database_id = "0724dc82-a25f-4bf8-8c40-980670e6f15e"

@@ -4,6 +4,9 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 // 用 Node 22 内置的 node:sqlite, 避免原生二进制依赖 (better-sqlite3 无法跨平台打包)
 import { DatabaseSync } from 'node:sqlite';
+import { buildQuery, ITEM_SQL } from './_query.js';
+
+export { buildQuery };
 
 // 注意: 变量名不能叫 __dirname, Netlify 打包器会注入同名声明导致冲突
 const LIB_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -77,40 +80,7 @@ LEFT JOIN returns r ON r.code = f.code
 LEFT JOIN risk k ON k.code = f.code
 `;
 
-// 查询参数 -> WHERE/ORDER BY (全部白名单, 无注入面)
-export function buildQuery(q = {}) {
-  const where = [];
-  const args = [];
-  const scope = q.scope === 'all' ? 'all' : 'bond';
-  if (scope === 'bond') where.push('f.is_bond = 1');
-  if (q.group && ['limited', 'unlimited', 'nodata'].includes(q.group)) {
-    where.push('f.limit_group = ?');
-    args.push(q.group);
-  }
-  if (q.status) {
-    where.push('f.sgzt = ?');
-    args.push(String(q.status).slice(0, 20));
-  }
-  if (q.type) {
-    where.push('f.type LIKE ?');
-    args.push(`%${String(q.type).slice(0, 30)}%`);
-  }
-  if (q.q) {
-    const kw = `%${String(q.q).slice(0, 30).replace(/[%_]/g, '')}%`;
-    where.push('(f.name LIKE ? OR f.code LIKE ?)');
-    args.push(kw, kw);
-  }
-  const SORTS = {
-    default: 'f.sort_order ASC, f.code ASC',
-    limit_asc: '(f.daily_limit IS NULL) ASC, f.daily_limit ASC, f.code ASC',
-    limit_desc: '(f.daily_limit IS NULL) DESC, f.daily_limit DESC, f.code ASC',
-    y1_desc: '(CAST(NULLIF(r.y1,\'\') AS REAL) IS NULL) ASC, CAST(NULLIF(r.y1,\'\') AS REAL) DESC, f.code ASC',
-    y1_asc: '(CAST(NULLIF(r.y1,\'\') AS REAL) IS NULL) ASC, CAST(NULLIF(r.y1,\'\') AS REAL) ASC, f.code ASC',
-    sharpe_desc: '(CAST(NULLIF(k.sharpe_1y,\'\') AS REAL) IS NULL) ASC, CAST(NULLIF(k.sharpe_1y,\'\') AS REAL) DESC, f.code ASC',
-  };
-  const orderBy = SORTS[q.sort] || SORTS.default;
-  return { where, args, orderBy, scope };
-}
+// 查询参数 -> WHERE/ORDER BY: 见 _query.js (三端共用)
 
 export async function runQuery(q = {}) {
   const db = await getDb();
