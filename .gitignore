@@ -15,3 +15,5 @@ __pycache__/
 .vercel
 .netlify/
 .wrangler/
+.ai_guide.html
+.ai_integration.html
