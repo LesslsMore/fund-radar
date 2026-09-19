@@ -19,3 +19,5 @@ __pycache__/
 .ai_integration.html
 run_cli.cjs
 check10.txt
+.playwright-cli/
+upload*.txt
