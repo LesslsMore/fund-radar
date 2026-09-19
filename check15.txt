@@ -1,0 +1,14 @@
+﻿EXITCODE=0
+===STDOUT===
+
+{"login":true}
+
+===STDERR===
+- initialize
+
+(node:53952) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `寰俊寮€鍙戣€呭伐鍏?--trace-deprecation ...` to show where the warning was created)
+鈭?IDE server has started, listening on http://127.0.0.1:15946
+- preparing
+鈭?islogin
+
