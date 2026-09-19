@@ -17,3 +17,4 @@ __pycache__/
 .wrangler/
 .ai_guide.html
 .ai_integration.html
+run_cli.cjs
