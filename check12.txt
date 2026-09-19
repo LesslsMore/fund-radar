@@ -1,0 +1,25 @@
+﻿node.exe : file:///C:/Users/T/ZCodeProject/fund-radar/run_cli.js:1
+所在位置 行:445 字符: 1
++ & "C:\Users\T\.workbuddy\binaries\node\versions\22.22.2-3\node.exe" " ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (file:///C:/User...ar/run_cli.js:1 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+const { spawn } = require("child_process");
+                  ^
+
+ReferenceError: require is not defined in ES module scope, you can use import i
+nstead
+This file is being treated as an ES module because it has a '.js' file extensio
+n and 'C:\Users\T\ZCodeProject\fund-radar\package.json' contains "type": "modul
+e". To treat it as a CommonJS script, rename it to use the '.cjs' file extensio
+n.
+    at file:///C:/Users/T/ZCodeProject/fund-radar/run_cli.js:1:19
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:
+665:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:11
+7:5)
+
+Node.js v22.22.2
