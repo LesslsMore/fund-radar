@@ -77,6 +77,7 @@ def validate(content: bytes, page_idx: int, expect_pages: int):
 
 
 def main():
+    global TOTAL_PAGES  # main 内会按服务端页数动态更新, 必须声明为全局
     start_page = 1
     # 断点续传: 已存在且有效的页文件跳过
     done = set()
